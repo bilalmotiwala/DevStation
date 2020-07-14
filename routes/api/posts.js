@@ -179,7 +179,7 @@ router.post(
 
         const { errors, isValid } = validatePostInput(req.body);
 
-        //Check Validation
+        //Check Validation (Post can be used for comments as it uses the same structure and parameters!)
         if(!isValid) {
             //If not Valid, then return errors.
             return res.status(400).json(errors);
@@ -199,6 +199,38 @@ router.post(
                 post.comments.unshift(newComment);
 
                 //Saving the Post.
+                post.save().then(post => res.json(post));
+        })
+        .catch(err => res.status(404).json({message : "No Post Found!"}));
+    }
+);
+
+//@Route:           DELETE api/posts/comment/:post_id/:comment_id
+//@Description:     Allows you to delete your comment on a Post.
+//@Access Type:     Private
+router.delete(
+    '/comment/:post_id/:comment_id',
+    passport.authenticate('jwt', {session:false}),
+    (req, res) => {
+
+            Post.findById(req.params.post_id)
+                .then(post => {
+                
+                //Check if the comment actually exists
+                if(post.comments.filter(comment => 
+                    comment._id.toString() === req.params.comment_id).length === 0) {
+                        //The above logic dictates that the comment doesn't exist.
+                        return res.status(404).json({message: "The Comment you're trying to delete doesn't exist!"})
+                }
+                //Setting up RemoveIndex to delete a comment
+                const removeIndex = post.comments
+                    .map(item => item._id.toString())
+                    .indexOf(req.params.comment_id);
+
+                //Splicing it out of the post comments
+                post.comments.splice(removeIndex, 1);
+
+                //Saving the changes.
                 post.save().then(post => res.json(post));
         })
         .catch(err => res.status(404).json({message : "No Post Found!"}));

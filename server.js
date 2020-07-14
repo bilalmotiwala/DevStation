@@ -40,7 +40,7 @@ require('./config/passport')(passport);
 
 
 //Making a Request.
-app.get('/', (req, res) => res.send('DevStation is under development. See you soon!'));
+app.get('/', (req, res) => res.send('PODConnect is under development. See you soon!'));
 
 //Utilizing Routes
 app.use('/api/users', users);
